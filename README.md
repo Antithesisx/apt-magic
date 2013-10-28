@@ -1,4 +1,0 @@
-Revcontrol
-==========
-
-Automatic version control.
