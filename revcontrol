@@ -1,0 +1,43 @@
+#!/bin/sh
+# Hi
+# Made by stee lord of 4chon
+# For Mac, use https://github.com/sschober/kqwait (lol)
+# Untested for Linux, lol, but it should work the same.
+
+if [ ! $1 ]; then
+	echo "Usage: $0 <file>"
+	exit 1
+fi
+
+file=$1
+filewithoutextension="${file%.*}"
+extension="${file##*.}"
+
+old_revisions () {
+	ls $filewithoutextension.*.$extension  2> /dev/null | while read otherrevision; do
+		thisnumber=$(echo "$otherrevision" | awk -F. '{print $(NF-1)}')
+		echo $thisnumber
+	done
+}
+
+# Mac doesn't have inotifywait
+#while kqwait "$file" > /dev/null
+while inotifywait -e close_write "$file"
+do
+	# Find the most recent revision number, so we can add +1 to it.
+	highest_revision=$(old_revisions | sed 's/^0*//' | sort -nr | head -n1)
+	if [ ! $highest_revision ]; then
+		highest_revision=0
+	fi
+	revisionno=$((highest_revision+1))
+	# Zero padding
+	revisionno=$(printf "%05d" $revisionno)
+	# New file name
+	revisionfile="$filewithoutextension.$revisionno.$extension"
+
+	echo "$(basename $file) was modified."
+	echo "Copying to $revisionfile"
+
+	# Copy file
+	cp "$file" "$revisionfile"
+done
