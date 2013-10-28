@@ -1,0 +1,2 @@
+#!/bin/bash
+sudo apt-cache search $1 | dmenu -i -l 30 | cut -d " " -f 1 | xargs -t -I {} sudo apt-get install {}
